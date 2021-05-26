@@ -17,7 +17,7 @@ This approach is a bit complex and maybe confusing to the users, and we want to 
 For now this is how the implementation looks like, maybe later we find a better way to polish this approach.
 
 
-## Sechond Approach
+## Second Approach
 At the secomd approach we try to simplify the functionality of the first API, the API will be able to handle Supervised Learning and GANs.
 - If the user gives to the Model single model/optimizer/loss functions, then the API will treat this as Supervised Learning manually.
 - If th user gives to the Model 2 models/optimizers/loss functions, then the API will treat this as GANs.
