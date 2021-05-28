@@ -16,13 +16,17 @@ At the first approach created a Model API that takes one or more models/optimize
 This approach is a bit complex and maybe confusing to the users, and we want to avoid this.
 For now this is how the implementation looks like, maybe later we find a better way to polish this approach.
 
-
 ## Second Approach
-At the secomd approach we try to simplify the functionality of the first API, the API will be able to handle Supervised Learning and GANs.
+At the second approach we try to simplify the functionality of the first API, the API will be able to handle Supervised Learning and GANs.
 - If the user gives to the Model single model/optimizer/loss functions, then the API will treat this as Supervised Learning manually.
 - If th user gives to the Model 2 models/optimizers/loss functions, then the API will treat this as GANs.
 - If the user gives the Model anything else, that won't work.
 
+## Third Approach
+At third approach we mainly focus on making the API more generic to help the users extend it and implement their own `train_step` method.
+- Supported DDP and AMP for single model/optimizer/loss function.
+- Ignored implementing a `train_step` for GANs and let the users extend the API and implement it.
+- The API now has methods to handle just one model, however in case the user wanted to train GANs, the API can still validate them and handle them.
 
 ## Chosen approach
 We at PyTorch-Ignite didn't find the proper solution yet.
