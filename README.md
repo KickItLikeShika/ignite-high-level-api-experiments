@@ -28,6 +28,12 @@ At third approach we mainly focus on making the API more generic to help the use
 - Ignored implementing a `train_step` for GANs and let the users extend the API and implement it.
 - The API now has methods to handle just one model, however in case the user wanted to train GANs, the API can still validate them and handle them.
 
+## Fourth Approach 
+At fourth approach we update the third one, but we keep the same logic to handle GANs and more complex `train_step` method.
+But at this approach we use `dict` for multiple inputs (models, optimizers, loss_fns), as dicts will add more flexibility and useability.
+- Supported DDP for single and multiple models/optimizers/loss functions.
+- The API can train one model, however in case the user wanted to train GANs, the user just needs to override `train_step` and feed a dict of models/optimizers/loss_fns and just `fit` the model.
+
 ## Chosen approach
 We at PyTorch-Ignite didn't find the proper solution yet.
 
