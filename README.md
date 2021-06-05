@@ -34,6 +34,13 @@ But at this approach we use `dict` for multiple inputs (models, optimizers, loss
 - Supported DDP for single and multiple models/optimizers/loss functions.
 - The API can train one model, however in case the user wanted to train GANs, the user just needs to override `train_step` and feed a dict of models/optimizers/loss_fns and just `fit` the model.
 
+## Fifth Approach 
+At fifth approach we update the previous one to see how it's going to perform in some example, and I added some examples too. And almost it's the same logic as the last one.
+- Added simple supvervised learning example.
+- Added GAN example.
+- Added DDP example.
+Everything seems to be working fine, but we are thinking about approach more intuitive, as most of the team don't like using `dicts`, we see it's too free.
+
 ## Chosen approach
 We at PyTorch-Ignite didn't find the proper solution yet.
 
