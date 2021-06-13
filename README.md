@@ -41,6 +41,14 @@ At fifth approach we update the previous one to see how it's going to perform in
 - Added DDP example.
 Everything seems to be working fine, but we are thinking about approach more intuitive, as most of the team don't like using `dicts`, we see it's too free.
 
+
+# Sixth Approach
+At sixth approach we choose a totally different approach to avoid the drawbacks in the previous approaches, we provided methods like `set_data()` , `set_distributed_config()`, etc. This way we avoided using dictionaries for taking the inputs.
+We also changed our logic for training GANs, if the user wants to train GANs, then he must override the `__init__()` and `train_step()` methods, the API and `fit()` method will be able to handle the models/optimizers/loss functions without overriding anything else.
+- Added examples for all use cases.
+- Changed the logic and the design.
+- Used a non-RAII technique for this API instead of RAII (Resource Acquisition Is Initialization).
+
 ## Chosen approach
 We at PyTorch-Ignite didn't find the proper solution yet.
 
