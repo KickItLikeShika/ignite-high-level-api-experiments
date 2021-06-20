@@ -102,6 +102,8 @@ Tensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
 
 class CustomModel(Model):
     def __init__(self):
+        # !! FIND A WAY TO HANDLE THESE ARGS
+        super().__init__(None, None, None)
         self.generator = generator
         self.discriminator = discriminator
         

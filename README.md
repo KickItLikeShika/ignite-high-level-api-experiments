@@ -49,6 +49,11 @@ We also changed our logic for training GANs, if the user wants to train GANs, th
 - Changed the logic and the design.
 - Used a non-RAII technique for this API instead of RAII (Resource Acquisition Is Initialization).
 
+**Updates**:
+- Used `train_engine` and `val_engine` as attributes.
+- Added 4 methods for handlers. (2 for training and 2 for validation).
+- Handled validation and setting data for validation via adding bool arg `train` in `set_data` method.
+
 ## Chosen approach
 We at PyTorch-Ignite didn't find the proper solution yet.
 

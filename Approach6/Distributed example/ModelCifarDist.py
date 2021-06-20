@@ -1,4 +1,4 @@
-from ModelCifar import Model
+from Model import Model
 
 from datetime import datetime
 from pathlib import Path
@@ -80,10 +80,27 @@ def run(
     spawn_kwargs["nproc_per_node"] = nproc_per_node
     if backend == "xla-tpu" and with_amp:
         raise RuntimeError("The value of with_amp should be False if backend is xla")
-    
-    model = create_model(config, **spawn_kwargs)
 
-    model.fit(num_epochs=config["num_epochs"])
+    def output_transform(output):
+        y_pred = output['prediction']
+        y = output['target']
+        return y_pred, y 
+
+    def run_validation(engine):
+        metrics_output = "\n".join([f"\t{k}: {v}" for k, v in engine.state.metrics.items()])
+        print(f"\n metrics:\n {metrics_output}")
+
+    model, metrics, checkpoint = create_model_and_handlers(config, run_validation, output_transform, **spawn_kwargs)
+
+    # ------------------------------------
+    # Train
+    # ------------------------------------
+    train(config, model, metrics, run_validation, checkpoint)
+
+    # ------------------------------------
+    # Validation
+    # ------------------------------------
+    validate(config, model, run_validation, output_transform)    
 
 
 def get_dataflow(config):
@@ -99,10 +116,10 @@ def get_dataflow(config):
         # Ensure that only local rank 0 download the dataset
         idist.barrier()
 
-    return train_dataset, test_dataset
+    return train_dataset
 
 
-def create_model(config, **spawn_kwargs):
+def create_model_and_handlers(config, run_validation, output_transform, **spawn_kwargs):
     model = cifar_utils.get_model(config["model"])
     optimizer = optim.SGD(
         model.parameters(),
@@ -113,14 +130,60 @@ def create_model(config, **spawn_kwargs):
     )
     criterion = nn.CrossEntropyLoss()
 
+    checkpoint = Checkpoint(
+        {"model": model, 'optimizer': optimizer},
+        DiskSaver("/tmp", require_empty=False),
+        n_saved=2,
+        score_name="train_accuracy",
+        score_function=Checkpoint.get_default_score_fn("Accuracy"),
+    )
+
+    metrics = {
+        "Accuracy": Accuracy(output_transform=output_transform),
+        "Loss": Loss(criterion, output_transform=output_transform),
+    }
+
     model = Model(model, optimizer, criterion, device=idist.device())
 
-    train_dataset, test_dataset = get_dataflow(config)
-
-    model.set_data(train_dataset, batch_size=config["batch_size"], num_workers=config["num_workers"], pin_memory=True, shuffle=True, drop_last=True)
     model.set_distributed_config(backend=config['backend'], **spawn_kwargs)
 
-    return model
+    return model, metrics, checkpoint
+
+
+def train(config, model, metrics, run_validation, checkpoint):
+    train_dataset = get_dataflow(config)
+    model.set_data(train_dataset, batch_size=config["batch_size"], num_workers=config["num_workers"], 
+                    pin_memory=True, shuffle=True, drop_last=True)
+
+    model.attach_train_on_event(
+            run_validation, 
+            Events.EPOCH_COMPLETED(every=2) | Events.COMPLETED
+        ).attach_train_on_event(
+            checkpoint,
+            Events.COMPLETED
+        )
+
+    for name, metric in metrics.items():
+        model.attach_train(metric, name)
+
+    model.fit(num_epochs=config["num_epochs"])
+
+
+def validate(config, model, run_validation, output_transform):
+    print("\n Training is done \n Validation started")
+
+    train_dataset = get_dataflow(config)
+    model.set_data(train_dataset, batch_size=config["batch_size"], num_workers=config["num_workers"], 
+                    pin_memory=True, shuffle=True, drop_last=True, train=False)
+
+    model.attach_val_on_event(
+        run_validation, Events.COMPLETED
+        ).attach_train(
+            handler=Accuracy(output_transform=output_transform),
+            name='Accuracy'
+        )
+
+    model.validate()
 
 
 if __name__ == "__main__":
