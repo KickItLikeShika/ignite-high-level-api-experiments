@@ -3,7 +3,8 @@ import pandas as pd
 import numpy as np
 import torch
 import torch.nn as nn
-
+from ignite.metrics import Accuracy
+from ignite.engine import Events
 
 # Naive Manual Test
 winedata = pd.read_csv('edited_wine.csv')
@@ -44,6 +45,24 @@ optimizer = torch.optim.SGD(model.parameters(), lr=0.01)
 
 model = Model(model, optimizer, criterion)
 model.set_data(dataset=wine_dataset, batch_size=10, shuffle=True)
+
+def output_transform(output):
+    y_pred = output['prediction']
+    y = output['target']
+    return y_pred, y 
+
+def run_validation(engine):
+    metrics_output = "\n".join([f"\t{k}: {v}" for k, v in engine.state.metrics.items()])
+    print(f"\n metrics:\n {metrics_output}")
+
+model.attach_train(
+    handler=Accuracy(output_transform=output_transform),
+    name="Accuracy"
+    ).attach_train_on_event(
+        run_validation, 
+        Events.EPOCH_COMPLETED(every=10) | Events.COMPLETED
+    )
+
 model.fit(100)
 print("FITTING IS FINE")
 predictions = model.predict(wine_org_t)
