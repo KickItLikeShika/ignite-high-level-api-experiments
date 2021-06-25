@@ -41,8 +41,7 @@ At fifth approach we update the previous one to see how it's going to perform in
 - Added DDP example.
 Everything seems to be working fine, but we are thinking about approach more intuitive, as most of the team don't like using `dicts`, we see it's too free.
 
-
-# Sixth Approach
+## Sixth Approach
 At sixth approach we choose a totally different approach to avoid the drawbacks in the previous approaches, we provided methods like `set_data()` , `set_distributed_config()`, etc. This way we avoided using dictionaries for taking the inputs.
 We also changed our logic for training GANs, if the user wants to train GANs, then he must override the `__init__()` and `train_step()` methods, the API and `fit()` method will be able to handle the models/optimizers/loss functions without overriding anything else.
 - Added examples for all use cases.
@@ -53,6 +52,14 @@ We also changed our logic for training GANs, if the user wants to train GANs, th
 - Used `train_engine` and `val_engine` as attributes.
 - Added 4 methods for handlers. (2 for training and 2 for validation).
 - Handled validation and setting data for validation via adding bool arg `train` in `set_data` method.
+
+## Seventh Approach
+After our previous experimentations, we realized how hard it is to find the generic and powerful solution  we are looking for, we have decided to implement and API similar to an existing solution, then modify it and make it cover all the feautres we want.
+So this approach is inspired from Argus API implementation with our touches.
+- Used `train_engine` and `val_engine` as attributes.
+- Covered DDP via a separated method `set_distributed_config`.
+- Handlers and metrics are feeded to the API via `fit()` and `validate()` methods, not separated methods.
+- The data is also gived to the API via `fit()` and `validate()`, not with `set_data()` methods.
 
 ## Chosen approach
 We at PyTorch-Ignite didn't find the proper solution yet.
