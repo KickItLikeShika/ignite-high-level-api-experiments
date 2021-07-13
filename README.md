@@ -59,7 +59,13 @@ So this approach is inspired from Argus API implementation with our touches.
 - Used `train_engine` and `val_engine` as attributes.
 - Covered DDP via a separated method `set_distributed_config`.
 - Handlers and metrics are feeded to the API via `fit()` and `validate()` methods, not separated methods.
-- The data is also gived to the API via `fit()` and `validate()`, not with `set_data()` methods.
+- The data is also given to the API via `fit()` and `validate()`, not with `set_data()` methods.
+
+## Eighth Approach
+In this approach we took the best from what we have done before, and we considered our drawbacks.
+- Used `set_data` methods, one for trian and another for validatoin.
+- We abandoned using `idist.parallel` interanlly after some discussion about it.
+- Added the ability to validate during training without any need to create handlers.
 
 ## Chosen approach
 We at PyTorch-Ignite didn't find the proper solution yet.
